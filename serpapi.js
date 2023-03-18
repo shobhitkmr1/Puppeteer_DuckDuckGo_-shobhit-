@@ -1,5 +1,4 @@
 const puppeteer = require("puppeteer");
-const axios = require("axios");
 (async () => {
   const query = "pc games";
   const apiKey =
@@ -7,7 +6,13 @@ const axios = require("axios");
   const url = `https://serpapi.com/search?engine=duckduckgo&q=${query}&api_key=${apiKey}`;
   const browser = await puppeteer.launch({ headless: false });
   const page = await browser.newPage();
-  await page.goto(url);
+  try {
+    await page.goto(url);
+  } catch (error) {
+    console.error(`Error navigating to ${url}: ${error}`);
+    await browser.close();
+    return;
+  }
   const results = await page.evaluate(() => {
     const resultElements = document.querySelectorAll(".result__body");
     const results = [];
@@ -19,8 +24,8 @@ const axios = require("axios");
     return results;
   });
   console.log("Search Results:");
-  results.forEach((result) => {
-    console.log(`- ${result.title}: ${result.snippet}`);
+  results.forEach(({ title, snippet }) => {
+    console.log(`- ${title}: ${snippet}`);
   });
   await new Promise(() => {});
 })();
